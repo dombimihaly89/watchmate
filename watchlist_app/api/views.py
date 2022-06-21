@@ -15,7 +15,7 @@ class MovieListAV(APIView):
     
     def post(self, request):
         serializer = MovieSerializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
         else:
@@ -34,7 +34,7 @@ class MovieDetailAV(APIView):
     def put(self, request, pk):
         movie = Movie.objects.get(pk=pk)
         serializer = MovieSerializer(movie, request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
         else:
