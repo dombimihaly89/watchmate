@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from watchlist_app.models import Movie
+from watchlist_app.models import Movie, StreamPlatform
 
 def name_length(value):
     if len(value) < 2:
@@ -7,20 +7,39 @@ def name_length(value):
     return value
 
 class MovieSerializer(serializers.ModelSerializer):
+    # len_title = serializers.SerializerMethodField()
+    
     class Meta:
         model = Movie
-        # fields = ['id', 'name', 'description']
-        exclude = ['active']
+        fields = '__all__'
+        # exclude = ['active']
+    
+    # def get_len_title(self, object):
+    #     return len(object.title)
         
-    def validate_name(self, value):
-        if len(value) < 2:
-            raise serializers.ValidationError("Name is too short!")
-        return value
+    # def validate_name(self, value):
+    #     if len(value) < 2:
+    #         raise serializers.ValidationError("Title is too short!")
+    #     return value
         
-    def validate(self, data):
-        if data['name'] == data['description']:
-            raise serializers.ValidationError("Title and description should be different!")
-        return data
+    # def validate(self, data):
+    #     if data['title'] == data['storyline']:
+    #         raise serializers.ValidationError("Title and storyline should be different!")
+    #     return data
+    
+class StreamPlatformSerilaizer(serializers.ModelSerializer):
+    movies = MovieSerializer(many=True, read_only=True)
+    # movies = serializers.StringRelatedField(many=True)
+    # movies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # movies = serializers.HyperlinkedRelatedField(
+    #     many=True,
+    #     read_only=True,
+    #     view_name='movie-detail'
+    # )
+    
+    class Meta:
+        model = StreamPlatform
+        fields = '__all__'
 
 # class MovieSerializer(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)
