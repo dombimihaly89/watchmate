@@ -9,7 +9,7 @@ def name_length(value):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = '__all__'
+        exclude = ['movie']
         
 class MovieSerializer(serializers.ModelSerializer):
     # len_title = serializers.SerializerMethodField()
@@ -33,7 +33,7 @@ class MovieSerializer(serializers.ModelSerializer):
     #         raise serializers.ValidationError("Title and storyline should be different!")
     #     return data
     
-class StreamPlatformSerilaizer(serializers.ModelSerializer):
+class StreamPlatformSerializer(serializers.ModelSerializer):
     movies = MovieSerializer(many=True, read_only=True)
     # movies = serializers.StringRelatedField(many=True)
     # movies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
