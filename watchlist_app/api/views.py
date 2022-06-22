@@ -1,10 +1,14 @@
+from asyncio import mixins
 from requests import Response
-from watchlist_app.models import Movie, StreamPlatform
-from watchlist_app.api.serializers import MovieSerializer, StreamPlatformSerilaizer
+from watchlist_app.models import Movie, Review, StreamPlatform
+from watchlist_app.api.serializers import (MovieSerializer, ReviewSerializer,
+                                           StreamPlatformSerilaizer)
 from rest_framework.response import Response
 # from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework import generics
+from rest_framework import mixins
 
 class MovieListAV(APIView):
     
@@ -83,6 +87,34 @@ class StreamPlatformDetailAV(APIView):
         streamplatform = StreamPlatform.objects.get(pk=pk)
         streamplatform.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+# class ReviewList(mixins.ListModelMixin,
+#                  mixins.CreateModelMixin,
+#                  generics.GenericAPIView):
+#     queryset = Review.objects.all()
+#     serializer_class = ReviewSerializer
+    
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
+    
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
+    
+# class ReviewDetail(mixins.RetrieveModelMixin, generics.GenericAPIView):
+#     queryset = Review.objects.all()
+#     serializer_class = ReviewSerializer
+    
+#     def get(self, request, *args, **kwargs):
+#         return self.retrieve(request, *args, **kwargs)
+
+class ReviewList(generics.ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    
+class ReviewDetail(generics.RetrieveAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    
 
 # @api_view(['GET', 'POST'])
 # def movie_list(request):
