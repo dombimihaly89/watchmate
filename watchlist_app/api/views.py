@@ -11,6 +11,10 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
+from watchlist_app.api.permissions import AdminOrReadonly, ReviewUserOrReadOnly
+from functools import reduce
 
 class MovieListAV(APIView):
     
@@ -142,6 +146,7 @@ class StreamPlatformDetailAV(APIView):
 
 class ReviewList(generics.ListAPIView):
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         pk = self.kwargs['pk']
@@ -150,6 +155,7 @@ class ReviewList(generics.ListAPIView):
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    permission_classes = [ReviewUserOrReadOnly]
     
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
@@ -158,7 +164,26 @@ class ReviewCreate(generics.CreateAPIView):
         pk = self.kwargs['pk']
         movie = Movie.objects.get(pk=pk)
         
-        serializer.save(movie=movie)
+        author = self.request.user
+        review_queryset = Review.objects.filter(movie=movie, author=author)
+        
+        if review_queryset.exists():
+            raise ValidationError('You\'ve already reviewed this movie.')
+        
+        movie.number_of_ratings += 1
+        reviews_on_movie = Review.objects.filter(movie=movie)
+        if len(reviews_on_movie) == 0:
+            movie.avg_rating = serializer.validated_data['rating']
+        else:
+            ratings_of_reviews = map(lambda m: m.rating, reviews_on_movie)
+            sum_of_ratings = reduce(lambda a, b: a + b, ratings_of_reviews) + serializer.validated_data['rating']
+            movie.avg_rating = sum_of_ratings / movie.number_of_ratings
+        movie.save()
+        
+        serializer.save(movie=movie, author=author)
+    
+    def get_queryset(self):
+        return Review.objects.all()
     
 
 # @api_view(['GET', 'POST'])

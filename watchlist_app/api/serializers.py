@@ -7,6 +7,8 @@ def name_length(value):
     return value
 
 class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+    
     class Meta:
         model = Review
         exclude = ['movie']
