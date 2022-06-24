@@ -1,5 +1,6 @@
 from asyncio import mixins
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import AnonymousUser
 from requests import Response, delete
 from watchlist_app.models import Movie, Review, StreamPlatform
 from watchlist_app.api.serializers import (MovieSerializer, ReviewSerializer,
@@ -159,6 +160,11 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    
+    def create(self, request, *args, **kwargs):
+        if type(request.user) is AnonymousUser:
+            return Response({'error': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
+        super().create()
 
     def perform_create(self, serializer):
         pk = self.kwargs['pk']
