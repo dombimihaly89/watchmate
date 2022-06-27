@@ -14,10 +14,11 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from watchlist_app.api.permissions import AdminOrReadonly, ReviewUserOrReadOnly
+from watchlist_app.api.permissions import IsAdminOrReadonly, IsReviewUserOrAdminOrReadOnly
 from functools import reduce
 
 class MovieListAV(APIView):
+    permission_classes = [IsAdminOrReadonly]
     
     def get(self, request):
         movies = Movie.objects.all()
@@ -33,6 +34,7 @@ class MovieListAV(APIView):
             return Response(serializer.errors)
 
 class MovieDetailAV(APIView):
+    permission_classes = [IsAdminOrReadonly]
     
     def get(self, request, pk):
         try:
@@ -84,6 +86,8 @@ class MovieDetailAV(APIView):
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class StreamPlatformMVS(viewsets.ModelViewSet):
+    permission_classes = [IsAdminOrReadonly]
+    
     queryset = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializer
     
@@ -147,24 +151,26 @@ class StreamPlatformDetailAV(APIView):
 
 class ReviewList(generics.ListAPIView):
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         pk = self.kwargs['pk']
         return Review.objects.filter(movie=pk)
     
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsReviewUserOrAdminOrReadOnly]
+
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [ReviewUserOrReadOnly]
     
 class ReviewCreate(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    
     serializer_class = ReviewSerializer
     
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         if type(request.user) is AnonymousUser:
             return Response({'error': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
-        super().create()
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         pk = self.kwargs['pk']

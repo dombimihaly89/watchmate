@@ -32,4 +32,4 @@ class Review(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='reviews')
     
     def __str__(self) -> str:
-        return str(self.rating) + " | " + self.movie.title
+        return str(self.rating) + " | " + self.movie.title + " | " + self.author.username
