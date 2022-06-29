@@ -150,6 +150,7 @@ class StreamPlatformDetailAV(APIView):
 #         return self.retrieve(request, *args, **kwargs)
 
 class ReviewList(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = ReviewSerializer
     
     def get_queryset(self):
