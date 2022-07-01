@@ -18,6 +18,9 @@ from watchlist_app.api.permissions import IsAdminOrReadonly, IsReviewUserOrAdmin
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
 from functools import reduce
 from watchlist_app.api.throttling import ReviewCreateThrottle, ReviewListThrottle
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from watchlist_app.api.pagination import ReviewPagination
 
 class MovieListAV(APIView):
     permission_classes = [IsAdminOrReadonly]
@@ -151,9 +154,14 @@ class StreamPlatformDetailAV(APIView):
 #         return self.retrieve(request, *args, **kwargs)
 
 class ReviewList(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    throttle_classes = [ReviewListThrottle]
+    # permission_classes = [IsAuthenticated]
+    # throttle_classes = [ReviewListThrottle]
     serializer_class = ReviewSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['active']
+    search_fields = ['author__username']
+    ordering_fields = ['rating']
+    pagination_class = ReviewPagination
     
     def get_queryset(self):
         pk = self.kwargs['pk']

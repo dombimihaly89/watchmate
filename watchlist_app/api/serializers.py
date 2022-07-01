@@ -15,7 +15,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         
 class MovieSerializer(serializers.ModelSerializer):
     # len_title = serializers.SerializerMethodField()
-    reviews = ReviewSerializer(many=True, read_only=True)
+    platform = serializers.CharField(source='platform.name')
+    
+    def __init__(self, instance=None, data=..., **kwargs):
+        super().__init__(instance, data, **kwargs)
+        self.reviews = ReviewSerializer(many=True, read_only=True)
     
     class Meta:
         model = Movie
@@ -36,7 +40,6 @@ class MovieSerializer(serializers.ModelSerializer):
     #     return data
     
 class StreamPlatformSerializer(serializers.ModelSerializer):
-    movies = MovieSerializer(many=True, read_only=True)
     # movies = serializers.StringRelatedField(many=True)
     # movies = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     # movies = serializers.HyperlinkedRelatedField(
@@ -44,6 +47,10 @@ class StreamPlatformSerializer(serializers.ModelSerializer):
     #     read_only=True,
     #     view_name='movie-detail'
     # )
+    
+    def __init__(self, instance=None, data=..., **kwargs):
+        super().__init__(instance, data, **kwargs)
+        self.movies = MovieSerializer(many=True, read_only=True)
     
     class Meta:
         model = StreamPlatform
