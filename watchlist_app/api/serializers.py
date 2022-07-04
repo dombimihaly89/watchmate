@@ -11,16 +11,13 @@ class ReviewSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Review
-        exclude = ['movie']
+        exclude = ['movie',]
         
 class MovieSerializer(serializers.ModelSerializer):
     # len_title = serializers.SerializerMethodField()
-    platform = serializers.CharField(source='platform.name')
-    
-    def __init__(self, instance=None, data=..., **kwargs):
-        super().__init__(instance, data, **kwargs)
-        self.reviews = ReviewSerializer(many=True, read_only=True)
-    
+    platform = serializers.SlugRelatedField(queryset = StreamPlatform.objects.all(), slug_field='name')
+    # reviews = ReviewSerializer(many=True, read_only=True)
+
     class Meta:
         model = Movie
         fields = '__all__'
@@ -47,10 +44,7 @@ class StreamPlatformSerializer(serializers.ModelSerializer):
     #     read_only=True,
     #     view_name='movie-detail'
     # )
-    
-    def __init__(self, instance=None, data=..., **kwargs):
-        super().__init__(instance, data, **kwargs)
-        self.movies = MovieSerializer(many=True, read_only=True)
+    movies = MovieSerializer(many=True, read_only=True)
     
     class Meta:
         model = StreamPlatform

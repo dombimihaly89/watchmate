@@ -20,7 +20,7 @@ from functools import reduce
 from watchlist_app.api.throttling import ReviewCreateThrottle, ReviewListThrottle
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-from watchlist_app.api.pagination import ReviewPagination
+from watchlist_app.api.pagination import ReviewPagination, ReviewLOPagination, ReviewCursorPagination
 
 class MovieListAV(APIView):
     permission_classes = [IsAdminOrReadonly]
@@ -32,9 +32,9 @@ class MovieListAV(APIView):
     
     def post(self, request):
         serializer = MovieSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors)
 
@@ -91,10 +91,10 @@ class MovieDetailAV(APIView):
 #         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class StreamPlatformMVS(viewsets.ModelViewSet):
-    permission_classes = [IsAdminOrReadonly]
-    
     queryset = StreamPlatform.objects.all()
     serializer_class = StreamPlatformSerializer
+    permission_classes = [IsAdminOrReadonly]
+    
     
 class StreamPlatformListAV(APIView):    
     def get(self, request):
@@ -157,11 +157,14 @@ class ReviewList(generics.ListAPIView):
     # permission_classes = [IsAuthenticated]
     # throttle_classes = [ReviewListThrottle]
     serializer_class = ReviewSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    # filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['active']
     search_fields = ['author__username']
-    ordering_fields = ['rating']
-    pagination_class = ReviewPagination
+    # ordering_fields = ['rating']
+    # pagination_class = ReviewPagination
+    # pagination_class = ReviewLOPagination
+    pagination_class = ReviewCursorPagination
     
     def get_queryset(self):
         pk = self.kwargs['pk']
@@ -169,7 +172,7 @@ class ReviewList(generics.ListAPIView):
     
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsReviewUserOrAdminOrReadOnly]
-    throttle_classes = [ScopedRateThrottle]
+    # throttle_classes = [ScopedRateThrottle]
     throttle_scope = 'review-detail'
 
     queryset = Review.objects.all()
@@ -177,7 +180,7 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     
 class ReviewCreate(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
-    throttle_classes = [ReviewCreateThrottle]
+    # throttle_classes = [ReviewCreateThrottle]
     
     serializer_class = ReviewSerializer
     
